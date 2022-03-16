@@ -24,6 +24,7 @@ thread_t *triggerTaskPointer; // pointer to trigger task
 int32_t teensyDelay = 3;
 int32_t travelDelay = 0;
 int32_t holdOpenDelay = 600;
+int32_t portNumber = 1;
 int32_t serialTimestamp;
 static THD_FUNCTION(triggerTask, arg)
 {
@@ -41,11 +42,12 @@ static THD_FUNCTION(triggerTask, arg)
         chMBPostTimeout(&Mqueue, (msg_t)serialTimestamp, TIME_INFINITE);  // send to mailbox first timestamp to open gate
         chMBPostTimeout(&Mqueue, (msg_t)-serialTimestamp, TIME_INFINITE); ////send to mailbox second timestamp to close gate
       }
-      else if (serialMessage == 'p') // p,travelDelay,holdOpenDelay if the serial char is then parse the parameters
+      else if (serialMessage == 'p') // p,travelDelay,holdOpenDelay,portNumber if the serial char is p then parse the parameters
       {
         travelDelay = Serial.parseInt();
         holdOpenDelay = Serial.parseInt();
-        Serial.printf("New parameters applied: %d,%d \n", travelDelay, holdOpenDelay);
+        portNumber = Serial.parseInt();
+        Serial.printf("New parameters applied: %d,%d,%d \n", travelDelay, holdOpenDelay, portNumber);
       }
     }
     // Serial.println(micros()-serialTimestamp);
@@ -91,7 +93,7 @@ static THD_FUNCTION(sortingTask, arg)
         int32_t sleep = max(0, msg) + travelDelay - TIME_I2US(chVTGetSystemTime());
         // Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
-        max7300.setHigh(1);
+        max7300.setHigh(portNumber);
         // Serial.println("gate is open");
       }
       else
@@ -100,7 +102,7 @@ static THD_FUNCTION(sortingTask, arg)
         // Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
         // Serial.println("gate is closed");
-        max7300.setLow(1);
+        max7300.setLow(portNumber);
       }
     }
     chThdSleepMicroseconds(1);
