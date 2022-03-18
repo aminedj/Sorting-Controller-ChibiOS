@@ -86,7 +86,7 @@ void MAX7300::begin()
             // Reset all ports to off state on the port expander
             for (uint8_t ports = 0x2C; ports <= 0x3F; ports += 1)
             {
-                state = i2cWrite(address, ports, 0x01);
+                state = i2cWrite(address, ports, 0x00);
                 statusUpdate(state, 'r', ports);
                 pins++;
             }
@@ -127,8 +127,10 @@ void MAX7300::setHigh(uint8_t port)
     {
         Wire.beginTransmission(addresses[(port - 1) / 20]);
         Wire.write(port_addresses[(port - 1) % 20]);
-        Wire.write(0x00);
+        Wire.write(0x01);
+        // state =
         Wire.endTransmission();
+        // Serial.println(state);
         // i2cWrite(addresses[(port-1)/20],port_addresses[(port-1)%20],0x00);
     }
 }
@@ -138,8 +140,11 @@ void MAX7300::setLow(uint8_t port)
     {
         Wire.beginTransmission(addresses[(port - 1) / 20]);
         Wire.write(port_addresses[(port - 1) % 20]);
-        Wire.write(0x01);
+        Wire.write(0x00);
+        // state =
         Wire.endTransmission();
+        // Serial.println(state);
+
         // i2cWrite(addresses[(port-1)/20],port_addresses[(port-1)%20],0x01);
     }
 }
@@ -152,7 +157,7 @@ void MAX7300::setAll(uint8_t state)
         {
             for (uint8_t ports = 0x2C; ports <= 0x3F; ports += 1)
             {
-                state = i2cWrite(address, ports, !state);
+                state = i2cWrite(address, ports, state);
             }
         }
     }
