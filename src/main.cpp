@@ -26,6 +26,7 @@ int32_t travelDelay = 0;
 int32_t holdOpenDelay = 600;
 int32_t portNumber = 1;
 int32_t serialTimestamp;
+bool flag = false;
 static THD_FUNCTION(triggerTask, arg)
 {
   (void)arg;
@@ -48,6 +49,21 @@ static THD_FUNCTION(triggerTask, arg)
         holdOpenDelay = Serial.parseInt();
         portNumber = Serial.parseInt();
         Serial.printf("New parameters applied: %d,%d,%d \n", travelDelay, holdOpenDelay, portNumber);
+      }
+      else if (serialMessage == 'a')
+      {
+        if (flag)
+        {
+          max7300.setAll(0); /* code */
+          flag = !flag;
+          Serial.println("all port are off");
+        }
+        else
+        {
+          max7300.setAll(1); /* code */
+          flag = !flag;
+          Serial.println("all port are on");
+        }
       }
     }
     // Serial.println(micros()-serialTimestamp);
@@ -73,35 +89,35 @@ static THD_FUNCTION(sortingTask, arg)
     if (chMBGetUsedCountI(&Mqueue) > 0)
     {
       int32_t msg = (int32_t)chMBPeekI(&Mqueue);
-      // int time = TIME_I2US(chVTGetSystemTime());
+      int time = TIME_I2US(chVTGetSystemTime());
       chMBFetchI(&Mqueue, (msg_t *)&buffer);
       // msg = (int32_t *)buffer;
       // int time = micros();
       // int32_t receive = *buffer;
-      // if (msg > 0)
-      // {
-      //   int32_t delta = time - msg;
-      //   Serial.printf("Received %d  at %d with delta %dum \n", buffer, time, delta);
-      // }
-      // else
-      // {
-      //   Serial.printf("Received %d  at %d\n", buffer, time);
-      // }
+      if (msg > 0)
+      {
+        int32_t delta = time - msg;
+        Serial.printf("Received %d  at %d with delta %dum \n", buffer, time, delta);
+      }
+      else
+      {
+        Serial.printf("Received %d  at %d\n", buffer, time);
+      }
       // Serial.println(receive);
       if (msg > 0)
       {
         int32_t sleep = max(0, msg) + travelDelay - TIME_I2US(chVTGetSystemTime());
-        // Serial.printf("sleeping for %d \n", max(0, sleep));
+        Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
         max7300.setHigh(portNumber);
-        // Serial.println("gate is open");
+        Serial.println("gate is open");
       }
       else
       {
         int32_t sleep = abs(msg) + travelDelay + holdOpenDelay - TIME_I2US(chVTGetSystemTime());
-        // Serial.printf("sleeping for %d \n", max(0, sleep));
+        Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
-        // Serial.println("gate is closed");
+        Serial.println("gate is closed");
         max7300.setLow(portNumber);
       }
     }
