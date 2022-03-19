@@ -54,15 +54,18 @@ static THD_FUNCTION(triggerTask, arg)
       {
         if (flag)
         {
-          max7300.setAll(0); /* code */
+          max7300.setHigh(portNumber); /* code */
+          digitalWrite(LED_BUILTIN, HIGH);
           flag = !flag;
-          Serial.println("all port are off");
+          Serial.println("port is on");
         }
         else
         {
-          max7300.setAll(1); /* code */
+          max7300.setLow(portNumber); /* code */
+          digitalWrite(LED_BUILTIN, LOW);
+          // max7300.setAll(1); /* code */
           flag = !flag;
-          Serial.println("all port are on");
+          Serial.println("port is off");
         }
       }
     }
@@ -110,6 +113,7 @@ static THD_FUNCTION(sortingTask, arg)
         Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
         max7300.setHigh(portNumber);
+        digitalWrite(LED_BUILTIN, HIGH);
         Serial.println("gate is open");
       }
       else
@@ -118,6 +122,7 @@ static THD_FUNCTION(sortingTask, arg)
         Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
         Serial.println("gate is closed");
+        digitalWrite(LED_BUILTIN, LOW);
         max7300.setLow(portNumber);
       }
     }
@@ -143,6 +148,7 @@ void setup()
   }
   // init MAX7300
   max7300.begin();
+  pinMode(LED_BUILTIN, OUTPUT);
   // init and start ChibiOS
   chBegin(chSetup);
   while (true)
