@@ -149,7 +149,7 @@ void setup()
   // init MAX7300
   max7300.begin();
   pinMode(LED_BUILTIN, OUTPUT);
-  // max7300.setHigh(115); // 75
+  // max7300.setHigh(115);
   // init and start ChibiOS
   chBegin(chSetup);
   while (true)
