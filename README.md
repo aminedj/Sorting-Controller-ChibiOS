@@ -3,7 +3,7 @@
 ## Prerequisites
 
 * Install [VSCode](https://code.visualstudio.com/)
-* Install the `PlatformIO` extension from the VSCode extension as described [here](https://docs.platformio.org/en/latest//integration/ide/vscode.html#installation)
+* Install the `PlatformIO` extension from the VSCode extension marketplace as described [here](https://docs.platformio.org/en/latest//integration/ide/vscode.html#installation)
 
 ## Setup
 
