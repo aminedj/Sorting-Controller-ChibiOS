@@ -28,3 +28,4 @@ The MAX7300 port expander library is contained in the two files `MAX7300.cpp` & 
 
 * The main controller code runs using the excellent port of [ChibiOS to the Teensy paltform](https://github.com/greiman/ChRt).
 * The code controller is made of 2 user defined threads `sortingTask` and `triggerTask`. Both are statically declared with the same priority (note that priority `NORMALPRIO + 1` is important in this case to run these two threads so they have a higher priority than the `chSetup()` thread) and use a cooperative schedule to yield execution.
+* uncomment the `Serial.print()` commands for debuging purposes, please note that these commands may marginaly decrease sorting performance.
