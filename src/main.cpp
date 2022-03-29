@@ -11,7 +11,7 @@
 
 MAX7300 max7300;
 // mailbox declaration
-const size_t mailboxBufferSize = 20;
+const size_t mailboxBufferSize = 3500;
 static msg_t actuationsQueue[mailboxBufferSize];
 MAILBOX_DECL(Mqueue, &actuationsQueue, mailboxBufferSize);
 
@@ -52,12 +52,12 @@ static THD_FUNCTION(triggerTask, arg)
       }
       else if (serialMessage == 'a')
       {
-        if (flag)
+        if (!flag)
         {
           max7300.setHigh(portNumber); /* code */
           digitalWrite(LED_BUILTIN, HIGH);
           flag = !flag;
-          Serial.println("port is on");
+          // Serial.println("port is on");
         }
         else
         {
@@ -65,7 +65,7 @@ static THD_FUNCTION(triggerTask, arg)
           digitalWrite(LED_BUILTIN, LOW);
           // max7300.setAll(1); /* code */
           flag = !flag;
-          Serial.println("port is off");
+          // Serial.println("port is off");
         }
       }
     }
@@ -92,38 +92,38 @@ static THD_FUNCTION(sortingTask, arg)
     if (chMBGetUsedCountI(&Mqueue) > 0)
     {
       int32_t msg = (int32_t)chMBPeekI(&Mqueue);
-      int time = TIME_I2US(chVTGetSystemTime());
+      // int time = TIME_I2US(chVTGetSystemTime());
       chMBFetchI(&Mqueue, (msg_t *)&buffer);
       // msg = (int32_t *)buffer;
       // int time = micros();
       // int32_t receive = *buffer;
-      if (msg > 0)
-      {
-        int32_t delta = time - msg;
-        Serial.printf("Received %d  at %d with delta %dum \n", buffer, time, delta);
-      }
-      else
-      {
-        Serial.printf("Received %d  at %d\n", buffer, time);
-      }
+      // if (msg > 0)
+      // {
+      //   int32_t delta = time - msg;
+      //   Serial.printf("Received %d  at %d with delta %dum \n", buffer, time, delta);
+      // }
+      // else
+      // {
+      //   Serial.printf("Received %d  at %d\n", buffer, time);
+      // }
       // Serial.println(receive);
       if (msg > 0)
       {
-        int32_t sleep = max(0, msg) + travelDelay - TIME_I2US(chVTGetSystemTime());
-        Serial.printf("sleeping for %d \n", max(0, sleep));
+        int32_t sleep = msg + travelDelay - TIME_I2US(chVTGetSystemTime());
+        // Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
         max7300.setHigh(portNumber);
         digitalWrite(LED_BUILTIN, HIGH);
-        Serial.println("gate is open");
+        // Serial.println("gate is open");
       }
       else
       {
         int32_t sleep = abs(msg) + travelDelay + holdOpenDelay - TIME_I2US(chVTGetSystemTime());
-        Serial.printf("sleeping for %d \n", max(0, sleep));
+        // Serial.printf("sleeping for %d \n", max(0, sleep));
         chThdSleepMicroseconds(max(0, sleep));
-        Serial.println("gate is closed");
+        // Serial.println("gate is closed");
+        max7300.setLow(portNumber); // 98
         digitalWrite(LED_BUILTIN, LOW);
-        max7300.setLow(portNumber);
       }
     }
     chThdSleepMicroseconds(1);
@@ -149,6 +149,7 @@ void setup()
   // init MAX7300
   max7300.begin();
   pinMode(LED_BUILTIN, OUTPUT);
+  // max7300.setHigh(115); // 75
   // init and start ChibiOS
   chBegin(chSetup);
   while (true)
